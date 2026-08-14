@@ -7,7 +7,11 @@ export function createQueue(initialState, decide, onActions) {
       const result = decide(state, event);
       state = result.state;
       if (onActions) {
-        await onActions(result.actions, event);
+        try {
+          await onActions(result.actions, event);
+        } catch (error) {
+          console.warn('Domain Tab Saver could not perform actions.', error);
+        }
       }
     });
     return chain;

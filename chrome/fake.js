@@ -2,6 +2,7 @@ export function createFakeChrome() {
   const tabs = new Map();
   const listeners = { onCreated: [], onUpdated: [], onRemoved: [] };
   const syncStorage = {};
+  const forced = { navigateTab: null, closeTab: null };
   let nextTabId = 1;
 
   function addTab(tab) {
@@ -28,6 +29,9 @@ export function createFakeChrome() {
         return tabs.get(tabId);
       },
       update: async (tabId, updateInfo) => {
+        if (forced.navigateTab && updateInfo.url) {
+          throw forced.navigateTab;
+        }
         const tab = tabs.get(tabId);
         if (tab) {
           Object.assign(tab, updateInfo);
@@ -35,6 +39,9 @@ export function createFakeChrome() {
         return tab;
       },
       remove: async (tabId) => {
+        if (forced.closeTab) {
+          throw forced.closeTab;
+        }
         tabs.delete(tabId);
         for (const fn of listeners.onRemoved) {
           fn(tabId, {});
@@ -92,6 +99,12 @@ export function createFakeChrome() {
     },
     setSyncStorage: (key, value) => {
       syncStorage[key] = value;
+    },
+    forceNavigateTabError: (error) => {
+      forced.navigateTab = error;
+    },
+    forceCloseTabError: (error) => {
+      forced.closeTab = error;
     },
   };
 
