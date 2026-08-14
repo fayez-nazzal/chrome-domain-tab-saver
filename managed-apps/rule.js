@@ -1,10 +1,3 @@
-export const STORAGE_KEY = 'domainTabSaver';
-
-export const DEFAULT_CONFIG = {
-  enabled: true,
-  domains: [],
-};
-
 export function sanitizeDomain(input) {
   let value = String(input).trim().toLowerCase();
   value = value.replace(/^[a-z0-9+.-]+:\/\//, '');
@@ -49,7 +42,7 @@ export function matchesDomain(hostname, pattern) {
   return matched;
 }
 
-export function findMatchingPattern(url, patterns) {
+export function findMatchingRule(url, patterns) {
   let matched = null;
   let hostname = '';
   try {
@@ -70,25 +63,4 @@ export function findMatchingPattern(url, patterns) {
     }
   }
   return matched;
-}
-
-export async function loadConfig() {
-  const stored = await chrome.storage.sync.get(STORAGE_KEY);
-  const saved = stored[STORAGE_KEY];
-  let config = { ...DEFAULT_CONFIG };
-  if (saved && typeof saved === 'object') {
-    config = { ...DEFAULT_CONFIG, ...saved };
-  }
-  config.enabled = Boolean(config.enabled);
-  config.domains = normalizeDomains(config.domains);
-  return config;
-}
-
-export async function saveConfig(config) {
-  const payload = {
-    enabled: Boolean(config.enabled),
-    domains: normalizeDomains(config.domains),
-  };
-  await chrome.storage.sync.set({ [STORAGE_KEY]: payload });
-  return payload;
 }

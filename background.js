@@ -1,4 +1,5 @@
-import { loadConfig, findMatchingPattern } from './config.js';
+import { loadConfig } from './managed-apps/settings.js';
+import { findMatchingRule } from './managed-apps/rule.js';
 
 const programmaticUpdates = new Set();
 const inFlightTabs = new Set();
@@ -15,7 +16,7 @@ async function collectSiblings(tab, pattern) {
   const siblings = allTabs.filter((candidate) => {
     let keep = candidate.id !== tab.id;
     if (keep) {
-      keep = Boolean(findMatchingPattern(candidate.url, [pattern]));
+      keep = Boolean(findMatchingRule(candidate.url, [pattern]));
     }
     return keep;
   });
@@ -40,7 +41,7 @@ async function handleCandidateTab(tab) {
     try {
       const config = await loadConfig();
       if (config.enabled) {
-        const pattern = findMatchingPattern(tab.url, config.domains);
+        const pattern = findMatchingRule(tab.url, config.domains);
         if (pattern) {
           const siblings = await collectSiblings(tab, pattern);
           const keeper = pickKeeper(siblings);

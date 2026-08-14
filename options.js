@@ -1,4 +1,5 @@
-import { loadConfig, saveConfig, sanitizeDomain, isValidDomain } from './config.js';
+import { loadConfig, saveConfig } from './managed-apps/settings.js';
+import { sanitizeDomain, isValidDomain } from './managed-apps/rule.js';
 
 const STATUS_TIMEOUT = 2500;
 

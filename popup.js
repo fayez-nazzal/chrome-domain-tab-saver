@@ -1,4 +1,5 @@
-import { loadConfig, saveConfig, findMatchingPattern } from './config.js';
+import { loadConfig, saveConfig } from './managed-apps/settings.js';
+import { findMatchingRule } from './managed-apps/rule.js';
 
 const STATUS_TIMEOUT = 2000;
 
@@ -57,7 +58,7 @@ async function persist(message) {
 function render() {
   elements.enabled.checked = config.enabled;
   elements.host.textContent = hostname || 'This page cannot be managed';
-  const matched = findMatchingPattern(`https://${hostname}`, config.domains);
+  const matched = findMatchingRule(`https://${hostname}`, config.domains);
   const wildcard = buildWildcard(hostname);
   const hasHost = Boolean(hostname);
   elements.addExact.hidden = true;
