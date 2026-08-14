@@ -2,8 +2,6 @@ export const STORAGE_KEY = 'domainTabSaver';
 
 export const DEFAULT_CONFIG = {
   enabled: true,
-  reuseUrl: true,
-  scopePerWindow: false,
   domains: [],
 };
 
@@ -82,8 +80,6 @@ export async function loadConfig() {
     config = { ...DEFAULT_CONFIG, ...saved };
   }
   config.enabled = Boolean(config.enabled);
-  config.reuseUrl = Boolean(config.reuseUrl);
-  config.scopePerWindow = Boolean(config.scopePerWindow);
   config.domains = normalizeDomains(config.domains);
   return config;
 }
@@ -91,28 +87,8 @@ export async function loadConfig() {
 export async function saveConfig(config) {
   const payload = {
     enabled: Boolean(config.enabled),
-    reuseUrl: Boolean(config.reuseUrl),
-    scopePerWindow: Boolean(config.scopePerWindow),
     domains: normalizeDomains(config.domains),
   };
   await chrome.storage.sync.set({ [STORAGE_KEY]: payload });
   return payload;
-}
-
-export function parseImportedConfig(text) {
-  const parsed = JSON.parse(text);
-  let source = parsed;
-  if (parsed && typeof parsed === 'object' && parsed[STORAGE_KEY]) {
-    source = parsed[STORAGE_KEY];
-  }
-  if (!source || typeof source !== 'object' || Array.isArray(source)) {
-    throw new Error('The file does not contain a Domain Tab Saver configuration.');
-  }
-  const domains = normalizeDomains(source.domains);
-  if (domains.length === 0) {
-    throw new Error('The file does not contain any valid domain.');
-  }
-  const config = { ...DEFAULT_CONFIG, ...source };
-  config.domains = domains;
-  return config;
 }

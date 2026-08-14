@@ -60,50 +60,6 @@
             <span class="hint">Turn this off to let tabs open normally.</span>
           </span>
         </label>
-        <label class="choice">
-          <input type="radio" name="reuse" id="reuse-url" />
-          <span>
-            <strong>Reuse existing tab and update URL</strong>
-            <span class="hint">The open tab jumps to the address you asked for.</span>
-          </span>
-        </label>
-        <label class="choice">
-          <input type="radio" name="reuse" id="reuse-focus" />
-          <span>
-            <strong>Focus existing tab without changing URL</strong>
-            <span class="hint">The open tab stays where it is.</span>
-          </span>
-        </label>
-      </section>
-
-      <section class="card stack">
-        <h2>Scope</h2>
-        <label class="choice">
-          <input type="radio" name="scope" id="scope-global" />
-          <span>
-            <strong>Global across all Chrome windows</strong>
-            <span class="hint">One tab per domain in the whole browser.</span>
-          </span>
-        </label>
-        <label class="choice">
-          <input type="radio" name="scope" id="scope-window" />
-          <span>
-            <strong>Scope per window</strong>
-            <span class="hint">One tab per domain inside each window.</span>
-          </span>
-        </label>
-      </section>
-
-      <section class="card stack">
-        <h2>Sync between profiles</h2>
-        <div class="row">
-          <button type="button" id="export">Export configuration (JSON)</button>
-          <button type="button" id="import">Import configuration (JSON)</button>
-          <input type="file" id="import-file" accept="application/json,.json" hidden />
-        </div>
-        <p class="hint">
-          Export once, then import the same file in every other Chrome profile to copy these rules.
-        </p>
       </section>
 
       <p id="status" class="status" role="status" aria-live="polite"></p>

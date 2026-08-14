@@ -1,6 +1,5 @@
-import { loadConfig, saveConfig, sanitizeDomain, isValidDomain, parseImportedConfig } from './config.js';
+import { loadConfig, saveConfig, sanitizeDomain, isValidDomain } from './config.js';
 
-const EXPORT_FILE_NAME = 'domain-tab-saver-config.json';
 const STATUS_TIMEOUT = 2500;
 
 const elements = {
@@ -8,13 +7,6 @@ const elements = {
   input: document.getElementById('domain-input'),
   list: document.getElementById('domain-list'),
   enabled: document.getElementById('enabled'),
-  reuseUrl: document.getElementById('reuse-url'),
-  reuseFocus: document.getElementById('reuse-focus'),
-  scopeGlobal: document.getElementById('scope-global'),
-  scopeWindow: document.getElementById('scope-window'),
-  exportButton: document.getElementById('export'),
-  importButton: document.getElementById('import'),
-  importFile: document.getElementById('import-file'),
   status: document.getElementById('status'),
 };
 
@@ -92,10 +84,6 @@ function buildReadOnlyItem(domain, index) {
 
 function render() {
   elements.enabled.checked = config.enabled;
-  elements.reuseUrl.checked = config.reuseUrl;
-  elements.reuseFocus.checked = !config.reuseUrl;
-  elements.scopeWindow.checked = config.scopePerWindow;
-  elements.scopeGlobal.checked = !config.scopePerWindow;
   const items = config.domains.map((domain, index) => {
     let item = null;
     if (index === editingIndex) {
@@ -148,29 +136,6 @@ function addDomain(rawValue) {
   }
 }
 
-function exportConfig() {
-  const text = JSON.stringify(config, null, 2);
-  const blob = new Blob([text], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = EXPORT_FILE_NAME;
-  anchor.click();
-  URL.revokeObjectURL(url);
-  showStatus('Configuration exported.', false);
-}
-
-async function importConfig(file) {
-  try {
-    const text = await file.text();
-    config = parseImportedConfig(text);
-    editingIndex = -1;
-    await persist(`Imported ${config.domains.length} domains.`);
-  } catch (error) {
-    showStatus(error.message, true);
-  }
-}
-
 elements.form.addEventListener('submit', (event) => {
   event.preventDefault();
   addDomain(elements.input.value);
@@ -179,40 +144,6 @@ elements.form.addEventListener('submit', (event) => {
 elements.enabled.addEventListener('change', () => {
   config.enabled = elements.enabled.checked;
   persist('Saved.');
-});
-
-elements.reuseUrl.addEventListener('change', () => {
-  config.reuseUrl = true;
-  persist('Saved.');
-});
-
-elements.reuseFocus.addEventListener('change', () => {
-  config.reuseUrl = false;
-  persist('Saved.');
-});
-
-elements.scopeGlobal.addEventListener('change', () => {
-  config.scopePerWindow = false;
-  persist('Saved.');
-});
-
-elements.scopeWindow.addEventListener('change', () => {
-  config.scopePerWindow = true;
-  persist('Saved.');
-});
-
-elements.exportButton.addEventListener('click', exportConfig);
-
-elements.importButton.addEventListener('click', () => {
-  elements.importFile.click();
-});
-
-elements.importFile.addEventListener('change', () => {
-  const file = elements.importFile.files[0];
-  if (file) {
-    importConfig(file);
-  }
-  elements.importFile.value = '';
 });
 
 config = await loadConfig();

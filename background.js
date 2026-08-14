@@ -10,23 +10,20 @@ function pickKeeper(tabs) {
   return sorted[0];
 }
 
-async function collectSiblings(tab, pattern, scopePerWindow) {
+async function collectSiblings(tab, pattern) {
   const allTabs = await chrome.tabs.query({});
   const siblings = allTabs.filter((candidate) => {
     let keep = candidate.id !== tab.id;
     if (keep) {
       keep = Boolean(findMatchingPattern(candidate.url, [pattern]));
     }
-    if (keep && scopePerWindow) {
-      keep = candidate.windowId === tab.windowId;
-    }
     return keep;
   });
   return siblings;
 }
 
-async function foldIntoKeeper(keeper, tab, reuseUrl) {
-  if (reuseUrl && tab.url && keeper.url !== tab.url) {
+async function foldIntoKeeper(keeper, tab) {
+  if (tab.url && keeper.url !== tab.url) {
     programmaticUpdates.add(keeper.id);
     await chrome.tabs.update(keeper.id, { url: tab.url });
   }
@@ -45,10 +42,10 @@ async function handleCandidateTab(tab) {
       if (config.enabled) {
         const pattern = findMatchingPattern(tab.url, config.domains);
         if (pattern) {
-          const siblings = await collectSiblings(tab, pattern, config.scopePerWindow);
+          const siblings = await collectSiblings(tab, pattern);
           const keeper = pickKeeper(siblings);
           if (keeper) {
-            await foldIntoKeeper(keeper, tab, config.reuseUrl);
+            await foldIntoKeeper(keeper, tab);
           }
         }
       }
