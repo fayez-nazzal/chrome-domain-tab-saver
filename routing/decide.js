@@ -2,6 +2,7 @@ import { findMatchingRule } from '../managed-apps/rule.js';
 import { scopeKeyFor } from '../managed-apps/scope-key.js';
 import { EventKind } from './event.js';
 import { navigateHome, focusTab, closeTab, persistHomeTabs } from './action.js';
+import { reconcile } from './state.js';
 
 function dropTabId(map, tabId) {
   const next = {};
@@ -44,11 +45,13 @@ function navigateExistingHome(state, homeTabId, scopeKey, newcomerTabId, url) {
 }
 
 function handleWorkerStarted(state, event) {
+  const rules = event.settings.domains;
+  const homeTabs = reconcile(event.storedHomeTabs, event.liveTabs, rules);
   const nextState = {
     ...state,
     enabled: event.settings.enabled,
-    rules: event.settings.domains,
-    homeTabs: { ...event.storedHomeTabs },
+    rules,
+    homeTabs,
   };
   return { state: nextState, actions: [] };
 }

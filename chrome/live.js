@@ -13,6 +13,13 @@ export const liveAdapter = {
   listTabs: async () => {
     return chrome.tabs.query({});
   },
+  readSession: async (key) => {
+    const stored = await chrome.storage.session.get(key);
+    return stored[key];
+  },
+  writeSession: async (key, value) => {
+    await chrome.storage.session.set({ [key]: value });
+  },
   onTabOpened: (fn) => {
     chrome.tabs.onCreated.addListener((tab) => {
       const url = tab.url || tab.pendingUrl;

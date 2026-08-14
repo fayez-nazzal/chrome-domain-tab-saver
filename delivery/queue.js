@@ -2,8 +2,9 @@ export function createQueue(initialState, decide, onActions) {
   let state = initialState;
   let chain = Promise.resolve();
 
-  function enqueue(event) {
+  function runStep(getEvent) {
     chain = chain.then(async () => {
+      const event = await getEvent();
       const result = decide(state, event);
       state = result.state;
       if (onActions) {
@@ -17,9 +18,17 @@ export function createQueue(initialState, decide, onActions) {
     return chain;
   }
 
+  function enqueue(event) {
+    return runStep(() => event);
+  }
+
+  function enqueueAsync(getEvent) {
+    return runStep(getEvent);
+  }
+
   function getState() {
     return state;
   }
 
-  return { enqueue, getState };
+  return { enqueue, enqueueAsync, getState };
 }

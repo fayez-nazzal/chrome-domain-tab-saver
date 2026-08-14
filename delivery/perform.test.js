@@ -6,6 +6,7 @@ import { createPerformActions } from './perform.js';
 import { decide } from '../routing/decide.js';
 import { emptyState } from '../routing/state.js';
 import { tabOpened } from '../routing/event.js';
+import { saveHomeTabs } from '../home-tabs/session.js';
 
 function setUpBurst() {
   const fake = createFakeChrome();
@@ -16,7 +17,13 @@ function setUpBurst() {
   const queue = createQueue(initialState, decide, (actions) => {
     return performActions(actions);
   });
-  performActions = createPerformActions(liveAdapter, queue.enqueue);
+  const actionAdapter = {
+    ...liveAdapter,
+    saveHomeTabs: (homeTabs) => {
+      return saveHomeTabs(liveAdapter, homeTabs);
+    },
+  };
+  performActions = createPerformActions(actionAdapter, queue.enqueue);
 
   const home = fake.openTab({ url: 'https://example.com/home' });
   const newcomer = fake.openTab({ url: 'https://example.com/other' });

@@ -2,6 +2,7 @@ export function createFakeChrome() {
   const tabs = new Map();
   const listeners = { onCreated: [], onUpdated: [], onRemoved: [] };
   const syncStorage = {};
+  const sessionStorage = {};
   const forced = { navigateTab: null, closeTab: null };
   let nextTabId = 1;
 
@@ -79,6 +80,16 @@ export function createFakeChrome() {
           Object.assign(syncStorage, items);
         },
       },
+      session: {
+        get: async (key) => {
+          const result = {};
+          result[key] = sessionStorage[key];
+          return result;
+        },
+        set: async (items) => {
+          Object.assign(sessionStorage, items);
+        },
+      },
     },
   };
 
@@ -99,6 +110,9 @@ export function createFakeChrome() {
     },
     setSyncStorage: (key, value) => {
       syncStorage[key] = value;
+    },
+    setSessionStorage: (key, value) => {
+      sessionStorage[key] = value;
     },
     forceNavigateTabError: (error) => {
       forced.navigateTab = error;

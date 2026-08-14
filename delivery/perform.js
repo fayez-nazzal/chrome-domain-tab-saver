@@ -19,6 +19,8 @@ export function createPerformActions(adapter, enqueue) {
         await adapter.focusTab(action.tabId);
       } else if (action.kind === ActionKind.CLOSE_TAB) {
         await adapter.closeTab(action.tabId);
+      } else if (action.kind === ActionKind.PERSIST_HOME_TABS) {
+        await adapter.saveHomeTabs(action.homeTabs);
       }
     }
   }
