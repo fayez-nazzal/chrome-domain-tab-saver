@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Domain Tab Saver options</title>
+    <link rel="stylesheet" href="ui.css" />
+    <style>
+      body {
+        padding: 24px;
+      }
+
+      main {
+        max-width: 640px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      header {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Domain Tab Saver</h1>
+        <p>Keeps one tab per domain by reusing the tab that is already open.</p>
+      </header>
+
+      <section class="card stack">
+        <h2>Domains</h2>
+        <form id="add-form" class="row">
+          <label class="hint" for="domain-input" hidden>Domain</label>
+          <input
+            id="domain-input"
+            type="text"
+            placeholder="example.com or *.example.com"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button type="submit" class="primary">Add</button>
+        </form>
+        <ul id="domain-list" class="domains"></ul>
+        <p class="hint">
+          Use <code>example.com</code> for one host, or <code>*.example.com</code> to cover every
+          subdomain.
+        </p>
+      </section>
+
+      <section class="card stack">
+        <h2>Behaviour</h2>
+        <label class="choice">
+          <input type="checkbox" id="enabled" />
+          <span>
+            <strong>Extension is on</strong>
+            <span class="hint">Turn this off to let tabs open normally.</span>
+          </span>
+        </label>
+        <label class="choice">
+          <input type="radio" name="reuse" id="reuse-url" />
+          <span>
+            <strong>Reuse existing tab and update URL</strong>
+            <span class="hint">The open tab jumps to the address you asked for.</span>
+          </span>
+        </label>
+        <label class="choice">
+          <input type="radio" name="reuse" id="reuse-focus" />
+          <span>
+            <strong>Focus existing tab without changing URL</strong>
+            <span class="hint">The open tab stays where it is.</span>
+          </span>
+        </label>
+      </section>
+
+      <section class="card stack">
+        <h2>Scope</h2>
+        <label class="choice">
+          <input type="radio" name="scope" id="scope-global" />
+          <span>
+            <strong>Global across all Chrome windows</strong>
+            <span class="hint">One tab per domain in the whole browser.</span>
+          </span>
+        </label>
+        <label class="choice">
+          <input type="radio" name="scope" id="scope-window" />
+          <span>
+            <strong>Scope per window</strong>
+            <span class="hint">One tab per domain inside each window.</span>
+          </span>
+        </label>
+      </section>
+
+      <section class="card stack">
+        <h2>Sync between profiles</h2>
+        <div class="row">
+          <button type="button" id="export">Export configuration (JSON)</button>
+          <button type="button" id="import">Import configuration (JSON)</button>
+          <input type="file" id="import-file" accept="application/json,.json" hidden />
+        </div>
+        <p class="hint">
+          Export once, then import the same file in every other Chrome profile to copy these rules.
+        </p>
+      </section>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+    </main>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

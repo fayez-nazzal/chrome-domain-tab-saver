@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Domain Tab Saver</title>
+    <link rel="stylesheet" href="ui.css" />
+    <style>
+      body {
+        width: 300px;
+        padding: 14px;
+      }
+
+      main {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .host {
+        font-family: ui-monospace, "SF Mono", Menlo, monospace;
+        word-break: break-all;
+      }
+
+      .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Domain Tab Saver</h1>
+
+      <label class="choice">
+        <input type="checkbox" id="enabled" />
+        <span><strong>Extension is on</strong></span>
+      </label>
+
+      <div class="card stack">
+        <span id="host" class="host">No page open</span>
+        <span id="state" class="hint"></span>
+        <div class="actions">
+          <button type="button" id="add-exact" class="primary" hidden></button>
+          <button type="button" id="add-wildcard" hidden></button>
+          <button type="button" id="remove" class="danger" hidden></button>
+        </div>
+      </div>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+
+      <button type="button" id="open-options" class="link">Open all options</button>
+    </main>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>
