@@ -74,3 +74,15 @@ test('CLOSE_TAB is never emitted directly from a TAB_OPENED event', () => {
   const closeActions = result.actions.filter((action) => action.kind === ActionKind.CLOSE_TAB);
   expect(closeActions.length).toBe(0);
 });
+
+test('two newcomers on one home tab in one burst both get closed', () => {
+  let state = baseState();
+  state = decide(state, tabOpened(1, 1, 'https://example.com/')).state;
+  state = decide(state, tabOpened(2, 1, 'https://example.com/second')).state;
+  state = decide(state, tabOpened(3, 1, 'https://example.com/third')).state;
+  const first = decide(state, navigationConfirmed(1, 'https://example.com/second'));
+  const second = decide(first.state, navigationConfirmed(1, 'https://example.com/third'));
+  const closedTabIds = [...first.actions, ...second.actions].map((action) => action.tabId);
+  expect(closedTabIds).toEqual([2, 3]);
+  expect(second.state.awaiting[1]).toBeUndefined();
+});

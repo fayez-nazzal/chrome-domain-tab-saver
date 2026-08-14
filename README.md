@@ -15,6 +15,8 @@ to that domain is delivered into it. There is no election between equal tabs, wh
 - If no home tab exists, the tab that just opened **becomes** the home. Nothing is ever closed.
 - If a home tab exists, the newcomer is closed **only after** the home tab confirms the navigation. If anything
   fails, both tabs stay alive and you are where you started.
+- If several links land on the same home tab in one burst, each newcomer waits its turn. They are queued in
+  order and every one of them is closed as its own navigation is confirmed.
 
 ## Files
 

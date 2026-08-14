@@ -37,8 +37,32 @@ function adoptAsHome(state, scopeKey, tabId) {
   return { state: nextState, actions: [persistHomeTabs(homeTabs)] };
 }
 
+function appendAwaiting(awaiting, homeTabId, entry) {
+  let pending = awaiting[homeTabId];
+  if (pending === undefined) {
+    pending = [];
+  }
+  return { ...awaiting, [homeTabId]: [...pending, entry] };
+}
+
+function shiftAwaiting(awaiting, homeTabId) {
+  const pending = awaiting[homeTabId];
+  const next = { ...awaiting };
+  let entry = undefined;
+  if (pending !== undefined && pending.length > 0) {
+    entry = pending[0];
+    const rest = pending.slice(1);
+    if (rest.length > 0) {
+      next[homeTabId] = rest;
+    } else {
+      delete next[homeTabId];
+    }
+  }
+  return { awaiting: next, entry };
+}
+
 function navigateExistingHome(state, homeTabId, scopeKey, newcomerTabId, url) {
-  const awaiting = { ...state.awaiting, [homeTabId]: { newcomerTabId, scopeKey } };
+  const awaiting = appendAwaiting(state.awaiting, homeTabId, { newcomerTabId, scopeKey });
   const nextState = { ...state, awaiting };
   const actions = [navigateHome(homeTabId, url), focusTab(homeTabId)];
   return { state: nextState, actions };
@@ -71,20 +95,17 @@ function handleTabClosed(state, event) {
 
 function handleNavigationConfirmed(state, event) {
   let result = { state, actions: [] };
-  const entry = state.awaiting[event.tabId];
-  if (entry) {
-    const awaiting = { ...state.awaiting };
-    delete awaiting[event.tabId];
-    const nextState = { ...state, awaiting };
-    result = { state: nextState, actions: [closeTab(entry.newcomerTabId)] };
+  const shifted = shiftAwaiting(state.awaiting, event.tabId);
+  if (shifted.entry !== undefined) {
+    const nextState = { ...state, awaiting: shifted.awaiting };
+    result = { state: nextState, actions: [closeTab(shifted.entry.newcomerTabId)] };
   }
   return result;
 }
 
 function handleNavigationFailed(state, event) {
-  const awaiting = { ...state.awaiting };
-  delete awaiting[event.tabId];
-  const nextState = { ...state, awaiting };
+  const shifted = shiftAwaiting(state.awaiting, event.tabId);
+  const nextState = { ...state, awaiting: shifted.awaiting };
   return { state: nextState, actions: [] };
 }
 
