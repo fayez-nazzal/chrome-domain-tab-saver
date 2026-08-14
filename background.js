@@ -1,75 +1,35 @@
 import { loadConfig } from './managed-apps/settings.js';
-import { findMatchingRule } from './managed-apps/rule.js';
+import { createQueue } from './delivery/queue.js';
+import { createPerformActions } from './delivery/perform.js';
+import { decide } from './routing/decide.js';
+import { emptyState } from './routing/state.js';
+import { settingsChanged, tabOpened, tabNavigated, tabClosed } from './routing/event.js';
+import { liveAdapter } from './chrome/live.js';
 
-const programmaticUpdates = new Set();
-const inFlightTabs = new Set();
+let performActions = null;
 
-function pickKeeper(tabs) {
-  const sorted = [...tabs].sort((left, right) => {
-    return left.id - right.id;
-  });
-  return sorted[0];
-}
-
-async function collectSiblings(tab, pattern) {
-  const allTabs = await chrome.tabs.query({});
-  const siblings = allTabs.filter((candidate) => {
-    let keep = candidate.id !== tab.id;
-    if (keep) {
-      keep = Boolean(findMatchingRule(candidate.url, [pattern]));
-    }
-    return keep;
-  });
-  return siblings;
-}
-
-async function foldIntoKeeper(keeper, tab) {
-  if (tab.url && keeper.url !== tab.url) {
-    programmaticUpdates.add(keeper.id);
-    await chrome.tabs.update(keeper.id, { url: tab.url });
-  }
-  await chrome.tabs.update(keeper.id, { active: true });
-  await chrome.windows.update(keeper.windowId, { focused: true });
-  await chrome.tabs.remove(tab.id);
-}
-
-async function handleCandidateTab(tab) {
-  const wasProgrammatic = programmaticUpdates.delete(tab.id);
-  const isBusy = inFlightTabs.has(tab.id);
-  if (!wasProgrammatic && !isBusy && tab.url) {
-    inFlightTabs.add(tab.id);
-    try {
-      const config = await loadConfig();
-      if (config.enabled) {
-        const pattern = findMatchingRule(tab.url, config.domains);
-        if (pattern) {
-          const siblings = await collectSiblings(tab, pattern);
-          const keeper = pickKeeper(siblings);
-          if (keeper) {
-            await foldIntoKeeper(keeper, tab);
-          }
-        }
-      }
-    } catch (error) {
-      console.warn('Domain Tab Saver could not handle the tab.', error);
-    } finally {
-      inFlightTabs.delete(tab.id);
-    }
-  }
-}
-
-chrome.tabs.onCreated.addListener((tab) => {
-  const url = tab.url || tab.pendingUrl;
-  handleCandidateTab({ ...tab, url });
+const queue = createQueue(emptyState(), decide, (actions) => {
+  return performActions(actions);
 });
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.url) {
-    handleCandidateTab({ ...tab, url: changeInfo.url });
+performActions = createPerformActions(liveAdapter, queue.enqueue);
+
+async function handleTabCandidate(makeEvent, tabId, windowId, url) {
+  if (url) {
+    const config = await loadConfig();
+    queue.enqueue(settingsChanged(config.enabled, config.domains));
+    queue.enqueue(makeEvent(tabId, windowId, url));
   }
+}
+
+liveAdapter.onTabOpened((tab) => {
+  handleTabCandidate(tabOpened, tab.tabId, tab.windowId, tab.url);
 });
 
-chrome.tabs.onRemoved.addListener((tabId) => {
-  programmaticUpdates.delete(tabId);
-  inFlightTabs.delete(tabId);
+liveAdapter.onTabNavigated((tab) => {
+  handleTabCandidate(tabNavigated, tab.tabId, tab.windowId, tab.url);
+});
+
+liveAdapter.onTabClosed((tab) => {
+  queue.enqueue(tabClosed(tab.tabId));
 });

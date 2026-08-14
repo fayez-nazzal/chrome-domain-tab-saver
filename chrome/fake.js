@@ -24,6 +24,9 @@ export function createFakeChrome() {
       query: async () => {
         return [...tabs.values()];
       },
+      get: async (tabId) => {
+        return tabs.get(tabId);
+      },
       update: async (tabId, updateInfo) => {
         const tab = tabs.get(tabId);
         if (tab) {
